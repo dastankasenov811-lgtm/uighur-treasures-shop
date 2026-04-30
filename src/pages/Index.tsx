@@ -1,21 +1,21 @@
 import { useMemo, useState } from "react";
-import { Search, Menu, Sparkles } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { CategoryScroller } from "@/components/CategoryScroller";
 import { ProductCard } from "@/components/ProductCard";
 import { OrnamentFooter } from "@/components/OrnamentFooter";
-import { SideMenu } from "@/components/SideMenu";
 import { CodeDialog } from "@/components/CodeDialog";
 import { AdminPanel } from "@/components/AdminPanel";
 import { useShopData } from "@/hooks/useShopData";
 import { toast } from "@/hooks/use-toast";
+import singersBg from "@/assets/hero-singers.jpg";
+import ornamentBg from "@/assets/uyghur-ornament-full.jpg";
 
 const Index = () => {
   const { products, setProducts, slides, setSlides, categories, setCategories } = useShopData();
   const [activeCat, setActiveCat] = useState("all");
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [showCodeDialog, setShowCodeDialog] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
 
@@ -29,16 +29,37 @@ const Index = () => {
 
   return (
     <div className="relative min-h-screen">
-      {/* Top bar */}
+      {/* === LAYERED PAGE BACKGROUND === */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {/* Singers — top region (behind hero carousel area) */}
+        <div
+          className="absolute inset-x-0 top-0 h-[420px]"
+          style={{
+            backgroundImage: `url(${singersBg})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center top",
+          }}
+        />
+        <div className="absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-background/40 via-background/60 to-background" />
+
+        {/* Ornament — from carousel area down to footer */}
+        <div
+          className="absolute inset-x-0 top-[380px] bottom-0"
+          style={{
+            backgroundImage: `url(${ornamentBg})`,
+            backgroundSize: "420px auto",
+            backgroundRepeat: "repeat",
+          }}
+        />
+        {/* Darken ornament */}
+        <div className="absolute inset-x-0 top-[380px] bottom-0 bg-background/80" />
+        {/* Smooth blend at top of ornament */}
+        <div className="absolute inset-x-0 top-[360px] h-24 bg-gradient-to-b from-background to-transparent" />
+      </div>
+
+      {/* === TOP BAR (no menu button) === */}
       <header className="fixed inset-x-0 top-0 z-30 border-b border-border/30 bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-md items-center justify-between px-4 py-3">
-          <button
-            onClick={() => setMenuOpen(true)}
-            className="rounded-full border border-border/60 p-2 text-foreground transition hover:border-primary/50 hover:text-primary"
-            aria-label="Меню"
-          >
-            <Menu className="h-4 w-4" />
-          </button>
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
             <span className="font-display text-base font-bold tracking-wide text-gradient-gold">
@@ -47,7 +68,7 @@ const Index = () => {
           </div>
           <button
             onClick={() => setSearchOpen((v) => !v)}
-            className="rounded-full border border-border/60 p-2 text-muted-foreground transition hover:border-primary/50 hover:text-primary"
+            className="rounded-full border border-border/60 bg-background/40 p-2 text-muted-foreground backdrop-blur transition hover:border-primary/50 hover:text-primary"
             aria-label="Поиск"
           >
             <Search className="h-4 w-4" />
@@ -55,7 +76,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-md pt-14">
+      <main className="relative z-10 mx-auto max-w-md pt-14">
         <HeroCarousel slides={slides} />
 
         <div className="px-4">
@@ -69,7 +90,7 @@ const Index = () => {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Поиск товаров..."
-                  className="h-12 w-full rounded-xl border border-border bg-card pl-10 pr-4 text-sm outline-none transition focus:border-primary"
+                  className="h-12 w-full rounded-xl border border-border bg-card/80 pl-10 pr-4 text-sm outline-none backdrop-blur transition focus:border-primary"
                 />
               </div>
             </div>
@@ -83,7 +104,7 @@ const Index = () => {
           </div>
 
           {filtered.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border/60 py-16 text-center text-sm text-muted-foreground">
+            <div className="rounded-2xl border border-dashed border-border/60 bg-background/40 py-16 text-center text-sm text-muted-foreground backdrop-blur">
               Ничего не найдено
             </div>
           ) : (
@@ -97,15 +118,6 @@ const Index = () => {
 
         <OrnamentFooter onSecretClick={() => setShowCodeDialog(true)} />
       </main>
-
-      <SideMenu
-        open={menuOpen}
-        onOpenChange={setMenuOpen}
-        categories={categories}
-        active={activeCat}
-        onSelect={setActiveCat}
-        onSearchClick={() => setSearchOpen(true)}
-      />
 
       <CodeDialog
         open={showCodeDialog}
