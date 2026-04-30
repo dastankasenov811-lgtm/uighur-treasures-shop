@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Slide } from "@/data/shop";
-import pattern from "@/assets/uyghur-pattern.png";
+import singersBg from "@/assets/hero-singers.jpg";
 
 interface Props { slides: Slide[]; }
 
@@ -17,14 +17,19 @@ export function HeroCarousel({ slides }: Props) {
 
   return (
     <section className="relative">
-      <div className="relative h-[58vh] min-h-[380px] max-h-[560px] overflow-hidden">
-        {/* Ornament overlay */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 z-20 opacity-[0.08] mix-blend-screen"
-          style={{ backgroundImage: `url(${pattern})`, backgroundSize: "320px" }}
-        />
+      {/* Singers background — etched behind everything */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          backgroundImage: `url(${singersBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center top",
+        }}
+      />
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-0 bg-background/55" />
 
+      <div className="relative z-10 h-[58vh] min-h-[380px] max-h-[560px] overflow-hidden">
         {slides.map((s, i) => (
           <div
             key={s.id}
@@ -34,7 +39,7 @@ export function HeroCarousel({ slides }: Props) {
             <img
               src={s.image}
               alt={s.title}
-              className="h-full w-full object-cover scale-105"
+              className="h-full w-full object-cover scale-105 opacity-90"
               loading={i === 0 ? "eager" : "lazy"}
             />
             <div className="absolute inset-0 bg-gradient-hero" />
@@ -51,7 +56,6 @@ export function HeroCarousel({ slides }: Props) {
         ))}
       </div>
 
-      {/* Dots */}
       <div className="absolute bottom-3 left-1/2 z-30 flex -translate-x-1/2 gap-1.5">
         {slides.map((_, i) => (
           <button
