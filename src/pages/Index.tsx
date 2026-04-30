@@ -1,21 +1,21 @@
 import { useMemo, useState } from "react";
-import { Search, Sparkles } from "lucide-react";
+import { Search, Menu, Sparkles } from "lucide-react";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { CategoryScroller } from "@/components/CategoryScroller";
 import { ProductCard } from "@/components/ProductCard";
 import { OrnamentFooter } from "@/components/OrnamentFooter";
-import { BottomNav } from "@/components/BottomNav";
+import { SideMenu } from "@/components/SideMenu";
 import { CodeDialog } from "@/components/CodeDialog";
 import { AdminPanel } from "@/components/AdminPanel";
-import { categories, WHATSAPP_PHONE } from "@/data/shop";
 import { useShopData } from "@/hooks/useShopData";
 import { toast } from "@/hooks/use-toast";
 
 const Index = () => {
-  const { products, setProducts, slides, setSlides } = useShopData();
+  const { products, setProducts, slides, setSlides, categories, setCategories } = useShopData();
   const [activeCat, setActiveCat] = useState("all");
-  const [navTab, setNavTab] = useState<"home" | "search" | "contact" | "system">("home");
   const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [showCodeDialog, setShowCodeDialog] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
 
@@ -25,32 +25,28 @@ const Index = () => {
     return list;
   }, [products, activeCat, query]);
 
-  const handleNav = (key: typeof navTab) => {
-    if (key === "system") {
-      setShowCodeDialog(true);
-      return;
-    }
-    if (key === "contact") {
-      window.open(`https://wa.me/${WHATSAPP_PHONE}`, "_blank", "noopener,noreferrer");
-      return;
-    }
-    setNavTab(key);
-    if (key === "home") window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const activeCatName = categories.find((c) => c.id === activeCat)?.name ?? "Товары";
 
   return (
-    <div className="relative min-h-screen pb-20">
-      {/* Top brand bar */}
+    <div className="relative min-h-screen">
+      {/* Top bar */}
       <header className="fixed inset-x-0 top-0 z-30 border-b border-border/30 bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-md items-center justify-between px-4 py-3">
+          <button
+            onClick={() => setMenuOpen(true)}
+            className="rounded-full border border-border/60 p-2 text-foreground transition hover:border-primary/50 hover:text-primary"
+            aria-label="Меню"
+          >
+            <Menu className="h-4 w-4" />
+          </button>
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <span className="font-display text-lg font-bold tracking-wide text-gradient-gold">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="font-display text-base font-bold tracking-wide text-gradient-gold">
               Uighur Shop
             </span>
           </div>
           <button
-            onClick={() => setNavTab("search")}
+            onClick={() => setSearchOpen((v) => !v)}
             className="rounded-full border border-border/60 p-2 text-muted-foreground transition hover:border-primary/50 hover:text-primary"
             aria-label="Поиск"
           >
@@ -63,7 +59,7 @@ const Index = () => {
         <HeroCarousel slides={slides} />
 
         <div className="px-4">
-          {navTab === "search" && (
+          {searchOpen && (
             <div className="pt-5 animate-fade-in">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -82,9 +78,7 @@ const Index = () => {
           <CategoryScroller categories={categories} active={activeCat} onChange={setActiveCat} />
 
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="font-display text-2xl font-bold">
-              {categories.find((c) => c.id === activeCat)?.name ?? "Товары"}
-            </h2>
+            <h2 className="font-display text-2xl font-bold">{activeCatName}</h2>
             <span className="text-xs text-muted-foreground">{filtered.length} товаров</span>
           </div>
 
@@ -101,10 +95,17 @@ const Index = () => {
           )}
         </div>
 
-        <OrnamentFooter />
+        <OrnamentFooter onSecretClick={() => setShowCodeDialog(true)} />
       </main>
 
-      <BottomNav active={navTab} onChange={handleNav} />
+      <SideMenu
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
+        categories={categories}
+        active={activeCat}
+        onSelect={setActiveCat}
+        onSearchClick={() => setSearchOpen(true)}
+      />
 
       <CodeDialog
         open={showCodeDialog}
@@ -123,6 +124,8 @@ const Index = () => {
         setProducts={setProducts}
         slides={slides}
         setSlides={setSlides}
+        categories={categories}
+        setCategories={setCategories}
       />
     </div>
   );
