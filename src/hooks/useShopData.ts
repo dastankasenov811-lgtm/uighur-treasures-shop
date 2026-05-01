@@ -1,25 +1,40 @@
-import { useEffect, useState } from "react";
-import { defaultProducts, defaultSlides, defaultCategories, type Product, type Slide, type Category } from "@/data/shop";
+import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { fallbackSlides, type Product, type Slide, type Category } from "@/data/shop";
 
-const PRODUCTS_KEY = "uighur_products_v2";
-const SLIDES_KEY = "uighur_slides_v2";
-const CATEGORIES_KEY = "uighur_categories_v2";
-
-function load<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch { return fallback; }
-}
+const ALL_CAT: Category = { id: "all", name: "Все", emoji: "✦" };
 
 export function useShopData() {
-  const [products, setProducts] = useState<Product[]>(() => load(PRODUCTS_KEY, defaultProducts));
-  const [slides, setSlides] = useState<Slide[]>(() => load(SLIDES_KEY, defaultSlides));
-  const [categories, setCategories] = useState<Category[]>(() => load(CATEGORIES_KEY, defaultCategories));
+  const [products, setProducts] = useState<Product[]>([]);
+  const [slides, setSlides] = useState<Slide[]>([]);
+  const [categories, setCategories] = useState<Category[]>([ALL_CAT]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => { localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products)); }, [products]);
-  useEffect(() => { localStorage.setItem(SLIDES_KEY, JSON.stringify(slides)); }, [slides]);
-  useEffect(() => { localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories)); }, [categories]);
+  const load = useCallback(async () => {
+    const [{ data: cats }, { data: prods }, { data: sls }] = await Promise.all([
+      supabase.from("categories").select("*").order("sort_order"),
+      supabase.from("products").select("*").order("created_at", { ascending: false }),
+      supabase.from("slides").select("*").order("created_at"),
+    ]);
 
-  return { products, setProducts, slides, setSlides, categories, setCategories };
+    setCategories([
+      ALL_CAT,
+      ...((cats ?? []).map((c) => ({ id: c.id, name: c.name, emoji: c.emoji }))),
+    ]);
+    setProducts(
+      (prods ?? []).map((p) => ({
+        id: p.id, name: p.name, price: Number(p.price), image: p.image, category: p.category,
+      })),
+    );
+    setSlides(
+      (sls ?? []).length
+        ? sls!.map((s) => ({ id: s.id, title: s.title, subtitle: s.subtitle ?? "", image: s.image }))
+        : fallbackSlides,
+    );
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  return { products, slides, categories, loading, reload: load };
 }

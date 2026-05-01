@@ -1,0 +1,4 @@
+project_id = "wybznbhwxrzaqhpuwzam"
+
+[functions.admin-shop]
+verify_jwt = false

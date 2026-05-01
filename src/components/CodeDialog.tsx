@@ -1,25 +1,31 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Lock } from "lucide-react";
-import { ADMIN_CODE } from "@/data/shop";
+import { Lock, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onSuccess: () => void;
+  onSuccess: (code: string) => void;
 }
 
 export function CodeDialog({ open, onOpenChange, onSuccess }: Props) {
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (code === ADMIN_CODE) {
+    setLoading(true);
+    const { data, error: err } = await supabase.functions.invoke("admin-shop", {
+      body: { code, action: "verify" },
+    });
+    setLoading(false);
+    if (!err && data?.ok) {
+      onSuccess(code);
       setCode("");
       setError(false);
-      onSuccess();
     } else {
       setError(true);
       setTimeout(() => setError(false), 600);
@@ -50,8 +56,10 @@ export function CodeDialog({ open, onOpenChange, onSuccess }: Props) {
           />
           <button
             type="submit"
-            className="w-full rounded-xl bg-gradient-gold py-3 font-semibold text-primary-foreground transition-all hover:shadow-gold active:scale-95"
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-gold py-3 font-semibold text-primary-foreground transition-all hover:shadow-gold active:scale-95 disabled:opacity-60"
           >
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             Войти
           </button>
           {error && <p className="text-center text-sm text-destructive">Неверный код</p>}
