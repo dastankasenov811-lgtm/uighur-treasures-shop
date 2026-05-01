@@ -123,7 +123,8 @@ const Index = () => {
       <CodeDialog
         open={showCodeDialog}
         onOpenChange={setShowCodeDialog}
-        onSuccess={() => {
+        onSuccess={(code) => {
+          setAdminCode(code);
           setShowCodeDialog(false);
           setShowAdmin(true);
           toast({ title: "Доступ разрешён", description: "Добро пожаловать в админ-панель" });
@@ -133,12 +134,11 @@ const Index = () => {
       <AdminPanel
         open={showAdmin}
         onOpenChange={setShowAdmin}
+        adminCode={adminCode}
         products={products}
-        setProducts={setProducts}
         slides={slides}
-        setSlides={setSlides}
         categories={categories}
-        setCategories={setCategories}
+        onChanged={reload}
       />
     </div>
   );
