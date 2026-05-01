@@ -12,12 +12,13 @@ import singersBg from "@/assets/hero-singers.jpg";
 import ornamentBg from "@/assets/uyghur-ornament-full.jpg";
 
 const Index = () => {
-  const { products, setProducts, slides, setSlides, categories, setCategories } = useShopData();
+  const { products, slides, categories, reload } = useShopData();
   const [activeCat, setActiveCat] = useState("all");
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [showCodeDialog, setShowCodeDialog] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [adminCode, setAdminCode] = useState("");
 
   const filtered = useMemo(() => {
     let list = activeCat === "all" ? products : products.filter((p) => p.category === activeCat);
