@@ -58,11 +58,18 @@ Deno.serve(async (req) => {
     }
     if (action === "deleteProduct") {
       const { id } = payload;
-      const { data: prod } = await supabase.from("products").select("image").eq("id", id).single();
-      if (prod?.image) {
-        const path = extractStoragePath(prod.image);
-        if (path) await supabase.storage.from("shop-images").remove([path]);
+      const { data: prod } = await supabase.from("products")
+        .select("image, images, variants").eq("id", id).single();
+      const urls: string[] = [];
+      if (prod?.image) urls.push(prod.image);
+      if (Array.isArray(prod?.images)) urls.push(...(prod!.images as string[]));
+      if (Array.isArray(prod?.variants)) {
+        for (const v of prod!.variants as Array<{ image?: string }>) {
+          if (v?.image) urls.push(v.image);
+        }
       }
+      const paths = urls.map(extractStoragePath).filter(Boolean) as string[];
+      if (paths.length) await supabase.storage.from("shop-images").remove(paths);
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (error) throw error;
       return json({ ok: true });
