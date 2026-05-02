@@ -40,10 +40,19 @@ Deno.serve(async (req) => {
 
     // ===== Products =====
     if (action === "addProduct") {
-      const { name, price, image, category } = payload;
+      const {
+        name, price, image, category,
+        product_type, images, description, variants, attributes,
+      } = payload;
       if (!name || price == null || !image || !category) return json({ error: "Не все поля" }, 400);
+      const row: Record<string, unknown> = { name, price, image, category };
+      if (product_type === "detailed" || product_type === "simple") row.product_type = product_type;
+      if (Array.isArray(images)) row.images = images;
+      if (typeof description === "string") row.description = description;
+      if (Array.isArray(variants)) row.variants = variants;
+      if (Array.isArray(attributes)) row.attributes = attributes;
       const { data, error } = await supabase.from("products")
-        .insert({ name, price, image, category }).select().single();
+        .insert(row).select().single();
       if (error) throw error;
       return json({ data });
     }
