@@ -40,28 +40,43 @@ export type Database = {
       }
       products: {
         Row: {
+          attributes: Json
           category: string
           created_at: string
+          description: string
           id: string
           image: string
+          images: Json
           name: string
           price: number
+          product_type: string
+          variants: Json
         }
         Insert: {
+          attributes?: Json
           category: string
           created_at?: string
+          description?: string
           id?: string
           image: string
+          images?: Json
           name: string
           price: number
+          product_type?: string
+          variants?: Json
         }
         Update: {
+          attributes?: Json
           category?: string
           created_at?: string
+          description?: string
           id?: string
           image?: string
+          images?: Json
           name?: string
           price?: number
+          product_type?: string
+          variants?: Json
         }
         Relationships: []
       }
