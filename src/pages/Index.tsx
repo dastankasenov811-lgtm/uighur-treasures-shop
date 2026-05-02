@@ -6,8 +6,10 @@ import { ProductCard } from "@/components/ProductCard";
 import { OrnamentFooter } from "@/components/OrnamentFooter";
 import { CodeDialog } from "@/components/CodeDialog";
 import { AdminPanel } from "@/components/AdminPanel";
+import { ProductDetail } from "@/components/ProductDetail";
 import { useShopData } from "@/hooks/useShopData";
 import { toast } from "@/hooks/use-toast";
+import type { Product } from "@/data/shop";
 import singersBg from "@/assets/hero-singers.jpg";
 import ornamentBg from "@/assets/uyghur-ornament-full.jpg";
 
@@ -19,6 +21,7 @@ const Index = () => {
   const [showCodeDialog, setShowCodeDialog] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [adminCode, setAdminCode] = useState("");
+  const [openProduct, setOpenProduct] = useState<Product | null>(null);
 
   const filtered = useMemo(() => {
     let list = activeCat === "all" ? products : products.filter((p) => p.category === activeCat);
@@ -111,7 +114,7 @@ const Index = () => {
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {filtered.map((p, i) => (
-                <ProductCard key={p.id} product={p} index={i} />
+                <ProductCard key={p.id} product={p} index={i} onOpen={setOpenProduct} />
               ))}
             </div>
           )}
