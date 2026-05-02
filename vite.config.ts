@@ -5,7 +5,6 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base:'/uighur-treasures-shop/',
   server: {
     host: "::",
     port: 8080,
