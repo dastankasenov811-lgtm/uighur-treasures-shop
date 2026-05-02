@@ -40,20 +40,36 @@ Deno.serve(async (req) => {
 
     // ===== Products =====
     if (action === "addProduct") {
-      const { name, price, image, category } = payload;
+      const {
+        name, price, image, category,
+        product_type, images, description, variants, attributes,
+      } = payload;
       if (!name || price == null || !image || !category) return json({ error: "Не все поля" }, 400);
+      const row: Record<string, unknown> = { name, price, image, category };
+      if (product_type === "detailed" || product_type === "simple") row.product_type = product_type;
+      if (Array.isArray(images)) row.images = images;
+      if (typeof description === "string") row.description = description;
+      if (Array.isArray(variants)) row.variants = variants;
+      if (Array.isArray(attributes)) row.attributes = attributes;
       const { data, error } = await supabase.from("products")
-        .insert({ name, price, image, category }).select().single();
+        .insert(row).select().single();
       if (error) throw error;
       return json({ data });
     }
     if (action === "deleteProduct") {
       const { id } = payload;
-      const { data: prod } = await supabase.from("products").select("image").eq("id", id).single();
-      if (prod?.image) {
-        const path = extractStoragePath(prod.image);
-        if (path) await supabase.storage.from("shop-images").remove([path]);
+      const { data: prod } = await supabase.from("products")
+        .select("image, images, variants").eq("id", id).single();
+      const urls: string[] = [];
+      if (prod?.image) urls.push(prod.image);
+      if (Array.isArray(prod?.images)) urls.push(...(prod!.images as string[]));
+      if (Array.isArray(prod?.variants)) {
+        for (const v of prod!.variants as Array<{ image?: string }>) {
+          if (v?.image) urls.push(v.image);
+        }
       }
+      const paths = urls.map(extractStoragePath).filter(Boolean) as string[];
+      if (paths.length) await supabase.storage.from("shop-images").remove(paths);
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (error) throw error;
       return json({ ok: true });
