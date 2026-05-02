@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { fallbackSlides, type Product, type Slide, type Category } from "@/data/shop";
+import { fallbackSlides, type Product, type Slide, type Category, type Variant, type Attribute } from "@/data/shop";
 
 const ALL_CAT: Category = { id: "all", name: "Все", emoji: "✦" };
+
+const asArray = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
 
 export function useShopData() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -23,7 +25,16 @@ export function useShopData() {
     ]);
     setProducts(
       (prods ?? []).map((p) => ({
-        id: p.id, name: p.name, price: Number(p.price), image: p.image, category: p.category,
+        id: p.id,
+        name: p.name,
+        price: Number(p.price),
+        image: p.image,
+        category: p.category,
+        product_type: (p.product_type === "detailed" ? "detailed" : "simple") as "simple" | "detailed",
+        images: asArray<string>(p.images),
+        description: p.description ?? "",
+        variants: asArray<Variant>(p.variants),
+        attributes: asArray<Attribute>(p.attributes),
       })),
     );
     setSlides(
