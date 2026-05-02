@@ -143,6 +143,8 @@ const Index = () => {
         categories={categories}
         onChanged={reload}
       />
+
+      <ProductDetail product={openProduct} onClose={() => setOpenProduct(null)} />
     </div>
   );
 };
